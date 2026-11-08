@@ -1,7 +1,7 @@
 name: Android CI
 
 on:
-  # Actions tab'dan qo'lda ishga tushirish
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   push:
     branches:
@@ -16,31 +16,6 @@ jobs:
       - uses: actions/checkout@v4.1.6
         with:
           submodules: 'true'
-
-      - name: Extract project zip
-        run: |
-          shopt -s nullglob
-          ZIP_FILE=""
-          for z in *.zip; do
-            if [ "$z" != "symbols.zip" ]; then ZIP_FILE="$z"; break; fi
-          done
-          if [ -z "$ZIP_FILE" ]; then
-            echo "No project zip found, skipping extraction."
-            exit 0
-          fi
-          echo "Extracting: $ZIP_FILE"
-          mkdir -p _extract
-          unzip -o "$ZIP_FILE" -d _extract
-          shopt -s dotglob
-          items=(_extract/*)
-          if [ ${#items[@]} -eq 1 ] && [ -d "${items[0]}" ]; then
-            SRC="${items[0]}"
-          else
-            SRC="_extract"
-          fi
-          mv "$SRC"/* .
-          rm -rf _extract "$ZIP_FILE"
-
       - name: set up JDK 17
         uses: actions/setup-java@v4.2.1
         with:
@@ -61,7 +36,6 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
       - name: Build with Gradle
         run: ./gradlew assembleEmulatorRelease
 
